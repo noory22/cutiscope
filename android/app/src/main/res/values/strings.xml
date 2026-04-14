@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">CutiScope</string>
+    <string name="accessibility_service_description">Intercepts the power button to show a custom power menu.</string>
+</resources>

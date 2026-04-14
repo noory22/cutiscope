@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "192644616318",
+    "project_id": "dermoscope-8554c",
+    "storage_bucket": "dermoscope-8554c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:192644616318:android:2d2bf15c391733908dc82f",
+        "android_client_info": {
+          "package_name": "com.dermascopeapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "192644616318-qcmc09abf2u59e1190ht6rl7bcqc376n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dermascopeapp",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "192644616318-qhm36q65v2tmtuvnse5sdhhs7o08ec6a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALi5mbMWkRgUSwAIJuuOdHUwKZ_7Um1zI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "192644616318-qhm36q65v2tmtuvnse5sdhhs7o08ec6a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
