@@ -1,5 +1,6 @@
 package com.dermascopeapp
 
+import android.app.Activity
 import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -316,6 +317,19 @@ class AppUpdateModule(private val reactContext: ReactApplicationContext) : React
     }
 
     private fun launchInstallIntent(file: File) {
+        val activity: Activity? = getCurrentActivity()
+        if (activity != null) {
+            try {
+                // Exit Kiosk Mode (Lock Task) so the Installer can be seen.
+                // Standard Android Screen Pinning blocks all other activities.
+                activity.stopLockTask()
+                Log.d(TAG, "Stopped Lock Task for installation")
+            } catch (e: Exception) {
+                // Not in lock task or failed to stop - continue anyway
+                Log.e(TAG, "Failed to stop lock task (might not be active): ${e.message}")
+            }
+        }
+
         val intent = Intent(Intent.ACTION_VIEW)
         val uri: Uri
 
