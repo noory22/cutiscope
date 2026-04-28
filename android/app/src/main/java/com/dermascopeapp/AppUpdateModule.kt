@@ -9,6 +9,8 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.core.content.FileProvider
 import com.facebook.react.bridge.Arguments
@@ -35,6 +37,8 @@ class AppUpdateModule(private val reactContext: ReactApplicationContext) : React
     private var downloadId: Long = -1
     private var downloadedFilePath: String? = null
     private var downloadReceiver: BroadcastReceiver? = null
+    private var progressHandler: Handler? = null
+    private var progressRunnable: Runnable? = null
 
     override fun getName(): String {
         return "AppUpdateModule"
@@ -146,6 +150,9 @@ class AppUpdateModule(private val reactContext: ReactApplicationContext) : React
 
             // Register receiver for download completion
             registerDownloadReceiver()
+
+            // Start polling for progress
+            startProgressPolling()
 
             Log.d(TAG, "Download started with ID: $downloadId")
             promise.resolve(true)
@@ -283,6 +290,7 @@ class AppUpdateModule(private val reactContext: ReactApplicationContext) : React
                     }
 
                     unregisterDownloadReceiver()
+                    stopProgressPolling()
                 }
             }
         }
@@ -304,6 +312,67 @@ class AppUpdateModule(private val reactContext: ReactApplicationContext) : React
             // Receiver might not be registered
         }
         downloadReceiver = null
+    }
+
+    private fun startProgressPolling() {
+        stopProgressPolling() // Clean up any existing polling
+
+        progressHandler = Handler(Looper.getMainLooper())
+        progressRunnable = object : Runnable {
+            override fun run() {
+                if (downloadId == -1L) return
+
+                val downloadManager = reactContext.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                val query = DownloadManager.Query().setFilterById(downloadId)
+                val cursor = downloadManager.query(query)
+
+                if (cursor != null && cursor.moveToFirst()) {
+                    val statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                    val status = cursor.getInt(statusIndex)
+
+                    if (status == DownloadManager.STATUS_RUNNING || status == DownloadManager.STATUS_PAUSED || status == DownloadManager.STATUS_PENDING) {
+                        val downloadedIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
+                        val totalIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
+
+                        val downloaded = cursor.getLong(downloadedIndex)
+                        val total = cursor.getLong(totalIndex)
+
+                        if (total > 0) {
+                            val progress = (downloaded * 100 / total).toInt()
+                            sendProgressToJS(progress)
+                        }
+                        
+                        // Continue polling
+                        progressHandler?.postDelayed(this, 1000)
+                    } else {
+                        // Download finished, failed or cancelled - stop polling
+                        stopProgressPolling()
+                    }
+                    cursor.close()
+                } else {
+                    stopProgressPolling()
+                }
+            }
+        }
+        progressHandler?.post(progressRunnable!!)
+    }
+
+    private fun stopProgressPolling() {
+        progressRunnable?.let { progressHandler?.removeCallbacks(it) }
+        progressHandler = null
+        progressRunnable = null
+    }
+
+    private fun sendProgressToJS(progress: Int) {
+        try {
+            val params = Arguments.createMap()
+            params.putInt("progress", progress)
+            reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit("onUpdateDownloadProgress", params)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to send progress to JS", e)
+        }
     }
 
     private fun sendEventToJS(eventName: String, data: String) {

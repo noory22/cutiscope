@@ -471,7 +471,7 @@ const WelcomeScreen = ({ onLoginSuccess, onGuestContinue }) => {
                 </Text>
               </View>
 
-              <Text style={styles.version}>v1.2</Text>
+              <Text style={styles.version}>v1.3</Text>
 
               {(isWifiConnected === false || networkStatus === 'WIFI_NO_INTERNET') && (
                 <View style={[

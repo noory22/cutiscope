@@ -341,11 +341,17 @@ const App = () => {
 
     // Listen for download completion from native module
     const downloadSub = DeviceEventEmitter.addListener('onUpdateDownloaded', () => {
-      setUpdateInfo(prev => prev ? { ...prev, downloadComplete: true } : prev);
+      setUpdateInfo(prev => prev ? { ...prev, downloadComplete: true, progress: 100 } : prev);
+    });
+
+    // Listen for download progress
+    const progressSub = DeviceEventEmitter.addListener('onUpdateDownloadProgress', (data) => {
+      setUpdateInfo(prev => prev ? { ...prev, progress: data.progress } : prev);
     });
 
     return () => {
       downloadSub.remove();
+      progressSub.remove();
     };
   }, [isConnected]);
 

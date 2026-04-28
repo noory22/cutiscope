@@ -7,7 +7,7 @@ const UpdateModal = ({ isVisible, updateInfo, onClose }) => {
 
     if (!updateInfo) return null;
 
-    const { forceUpdate, versionName, releaseNotes, downloadUrl, downloadComplete } = updateInfo;
+    const { forceUpdate, versionName, releaseNotes, downloadUrl, downloadComplete, progress } = updateInfo;
 
     const handleUpdate = async () => {
         if (Platform.OS === 'android') {
@@ -71,8 +71,10 @@ const UpdateModal = ({ isVisible, updateInfo, onClose }) => {
                     ) : isDownloading ? (
                         /* ── State 2: Downloading ── */
                         <View style={styles.progressContainer}>
-                            <ActivityIndicator size="large" color="#007AFF" />
-                            <Text style={styles.progressText}>Downloading update...</Text>
+                            <View style={styles.progressBarBackground}>
+                                <View style={[styles.progressBarFill, { width: `${progress || 0}%` }]} />
+                            </View>
+                            <Text style={styles.progressText}>Downloading update... {progress || 0}%</Text>
                         </View>
                     ) : (
                         /* ── State 1: Ready to update ── */
@@ -166,10 +168,22 @@ const styles = StyleSheet.create({
     progressContainer: {
         width: '100%',
         alignItems: 'center',
-        marginVertical: 10
+        marginVertical: 15
+    },
+    progressBarBackground: {
+        width: '100%',
+        height: 8,
+        backgroundColor: '#E0E0E0',
+        borderRadius: 4,
+        overflow: 'hidden',
+        marginBottom: 12
+    },
+    progressBarFill: {
+        height: '100%',
+        backgroundColor: '#007AFF',
     },
     progressText: {
-        marginTop: 10,
+        fontSize: 14,
         color: '#007AFF',
         fontWeight: '600'
     },
