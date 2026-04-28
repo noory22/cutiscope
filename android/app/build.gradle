@@ -86,8 +86,8 @@ android {
         applicationId "com.dermascopeapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "7.1"
+        versionCode 11
+        versionName "7.4"
     }
     signingConfigs {
         debug {
@@ -128,6 +128,11 @@ dependencies {
     // Add the dependencies for Firebase products you want to use
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation("com.google.firebase:firebase-analytics")
+
+    // APK Updater Library
+    implementation("com.github.supersu-man:apkupdater-library:v2.1.0")
+
+
 
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries

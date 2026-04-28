@@ -107,6 +107,8 @@ const App = () => {
   const [hasSerialNumber, setHasSerialNumber] = useState(true);
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [isPowerModalVisible, setIsPowerModalVisible] = useState(false);
+  const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState(null);
   const [kioskPinModalVisible, setKioskPinModalVisible] = useState(false);
   const [kioskPinValue, setKioskPinValue] = useState('');
   const [kioskPinError, setKioskPinError] = useState('');
@@ -314,6 +316,39 @@ const App = () => {
     setIsGuestMode(true);
   };
 
+  // Automatic Update Check
+  useEffect(() => {
+    const checkUpdates = async () => {
+      try {
+        const result = await NativeModules.AppUpdateModule.checkForUpdate();
+        if (result && result.isAvailable) {
+          setUpdateInfo({
+            versionName: result.versionName || "New Version",
+            releaseNotes: result.releaseNotes || "Performance improvements and bug fixes.",
+            downloadUrl: result.downloadUrl || "",
+            forceUpdate: false
+          });
+          setIsUpdateModalVisible(true);
+        }
+      } catch (e) {
+        console.error("Update check failed:", e);
+      }
+    };
+
+    if (isConnected) {
+      checkUpdates();
+    }
+
+    // Listen for download completion from native module
+    const downloadSub = DeviceEventEmitter.addListener('onUpdateDownloaded', () => {
+      setUpdateInfo(prev => prev ? { ...prev, downloadComplete: true } : prev);
+    });
+
+    return () => {
+      downloadSub.remove();
+    };
+  }, [isConnected]);
+
   if (isLoading || isConnected === null) {
     return (
       <View style={{
@@ -430,7 +465,13 @@ const App = () => {
                   </View>
                 </Modal>
                 <CustomKeyboard />
+                <UpdateModal
+                  isVisible={isUpdateModalVisible}
+                  updateInfo={updateInfo}
+                  onClose={() => setIsUpdateModalVisible(false)}
+                />
                 <InAppToastHost />
+
               </View>
             </SafeAreaView>
           </SafeAreaProvider>
